@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom PC Builders</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+           opacity: 0;
+           transform: translateY(20px);
+           transition: opacity 2s ease-out, transform 2s ease-out;
+       }
+
+        body.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        body {
+            background-color: #0f1115;
+            color: white;
+            line-height: 1.6;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background-color: #1a1c22;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav h1 {
+            font-size: 1.5rem;
+            color: #00d1b2;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #00d1b2;
+        }
+
+       
+        section {
+            padding: 60px 20px;
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 120px 20px;
+            
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                        url('hero-bg.jpg') center/cover;
+        }
+
+        .hero h2 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background-color: #00d1b2;
+            color: black;
+            padding: 12px 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #00a18a;
+        }
+
+        .about {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .about img {
+            width: 100%;
+            max-width: 450px;
+            border-radius: 10px;
+        }
+
+        .about-text {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .about-text h3 {
+            color: #00d1b2;
+            margin-bottom: 15px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .service {
+            background-color: #1a1c22;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .service h4 {
+            margin-bottom: 10px;
+            color: #00d1b2;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .product {
+            background-color: #1a1c22;
+            padding: 20px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .product:hover {
+            transform: translateY(-5px);
+        }
+
+        .product img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .product h4 {
+            margin-bottom: 10px;
+            color: #00d1b2;
+        }
+
+        
+        .testimonials {
+            text-align: center;
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .testimonial {
+            background-color: #1a1c22;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .testimonial p {
+            font-style: italic;
+            color: #ccc;
+        }
+
+        .testimonial h5 {
+            margin-top: 10px;
+            color: #00d1b2;
+        }
+
+    #contact {
+        background-color: #1a1c22;
+        padding: 40px 20px;
+        border-radius: 10px;
+        margin-top: 50px;
+    }
+    #contact a:hover {
+        text-decoration: underline;
+    }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #1a1c22;
+            margin-top: 50px;
+        }
+
+        footer p {
+            color: #ccc;
+        }
+    #contact {
+        background-color: #1a1c22;
+        padding: 40px 20px;
+        border-radius: 10px;
+        margin-top: 50px;
+    }
+    #contact a:hover {
+        text-decoration: underline;
+    }
+
+    </style>
+</head>
+<body>
+
+  
+    <nav>
+        <h1>Phoenix PC Builders👷</h1>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#products">Builds</a></li>
+            <li><a href="#testimonials">Reviews</a></li>
+            <li><a href="#contact">Contact</a></li>
+
+        </ul>
+    </nav>
+
+
+    <section class="hero">
+        <h2>Build Your Dream PC</h2>
+        <p>High-performance custom PCs for gaming, work, or content creation.</p>
+        <button class="btn" onclick="scrollToProducts()">Explore Builds</button>
+    </section>
+
+   
+    <section id="about">
+        <div class="about">
+            <img src="about.jpg" alt="About Us">
+            <div class="about-text">
+                <h3>About Us</h3>
+                <p>At Phoenix PC Builders, we turn your performance dreams into reality.We design and assemble machines that match your needs perfectly — from competitive gaming rigs to high-end workstations. Our builds are crafted with premium components and tested for peak performance.</p>
+            </div>
+        </div>
+    </section>
+
+  
+    <section id="services">
+        <h3 style="text-align:center; margin-bottom: 30px;">Our Services</h3>
+        <div class="services-grid">
+            <div class="service">
+                <h4>Custom PC Builds</h4>
+                <p>Tailored setups for gaming, work, or streaming.</p>
+            </div>
+            <div class="service">
+                <h4>PC Upgrades</h4>
+                <p>Boost your old machine with the latest parts.</p>
+            </div>
+            <div class="service">
+                <h4>Repair & Maintenance</h4>
+                <p>Fast and reliable hardware & software fixes.</p>
+            </div>
+        </div>
+    </section>
+
+   
+    <section id="products">
+        <h3 style="text-align:center; margin-bottom: 30px;">Popular Builds</h3>
+        <div class="product-grid">
+            <div class="product">
+                <img src="gaming-beast.jpg" alt="Gaming Beast">
+                <h4>Gaming Beast</h4>
+                <p>RTX 4090, Ryzen 9, 32GB RAM, 2TB SSD</p>
+            </div>
+            <div class="product">
+                <img src="work.jpg" alt="Workstation Pro">
+                <h4>Workstation Pro</h4>
+                <p>Intel i9, Quadro RTX, 64GB RAM, 4TB Storage</p>
+            </div>
+            <div class="product">
+                <img src="budget.jpg" alt="Budget Gamer">
+                <h4>Budget Gamer</h4>
+                <p>RTX 3060, Ryzen 5, 16GB RAM, 1TB SSD</p>
+            </div>
+        </div>
+    </section>
+
+  
+    <section id="testimonials" class="testimonials">
+        <h3 style="margin-bottom: 30px;">What Our Customers Say</h3>
+        <div class="testimonial-grid">
+            <div class="testimonial">
+                <p>"Best PC store ever! My new gaming rig is a beast."</p>
+                <h5>- Rahul Kumar</h5>
+            </div>
+            <div class="testimonial">
+                <p>"Super friendly team and lightning-fast delivery."</p>
+                <h5>- Sneha Verma</h5>
+            </div>
+            <div class="testimonial">
+                <p>"They upgraded my workstation and now my workflow is 3x faster."</p>
+                <h5>- Amit Sharma</h5>
+            </div>
+        </div>
+    </section>
+    
+    <section id="contact">
+        <h3 style="text-align:center; margin-bottom: 30px;">Get in Touch</h3>
+        <div style="max-width:600px; margin:auto; text-align:center;">
+            <p>Email: <a href="mailto:phoenixpcbuilders@example.com" style="color:#00d1b2;">phoenixpcbuilders@example.com</a></p>
+            <p>Phone: <a href="tel:+911234567890" style="color:#00d1b2;">+91 12345 67890</a></p>
+            <p style="color:#00d1b2;"   >Tech Haven PC Builds
+                123 Silicon Street,
+                Byte City, Techland</p>
+        </div>
+    </section>
+    
+   
+    <footer>
+        <p>© 2025 Phoenix PC Builders | All Rights Reserved</p>
+    </footer>
+
+    <script>
+        
+        function scrollToProducts() {
+            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+    <script>
+        window.addEventListener("load", function() {
+          document.body.classList.add("loaded");
+        });
+    </script>
+      
+</body>
+</html>
