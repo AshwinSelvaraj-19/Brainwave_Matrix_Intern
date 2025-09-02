@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blogify — Simple Blog with Auth</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --text: #e5e7eb;
+      --muted: #1f2937;
+      --primary: #6366f1;
+      --danger: #ef4444;
+      --subtle: #9ca3af;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.5;
+    }
+    header { position: sticky; top: 0; background: #0d1324; border-bottom: 1px solid #232a3a; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 16px; }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .title { font-weight: 700; }
+    .nav-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .btn { border: 0; cursor: pointer; color: white; padding: 8px 12px; border-radius: var(--radius); background: var(--muted); }
+    .btn.primary { background: var(--primary); }
+    .btn.danger { background: #7f1d1d; }
+    .btn.ghost { background: transparent; border: 1px solid #2b3346; }
+    main { padding: 24px 0 40px; }
+    .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 340px 1fr; } }
+    .panel { border: 1px solid #232a3a; border-radius: var(--radius); padding: 16px; }
+    .panel h2 { margin: 0 0 10px; font-size: 18px; }
+    .muted { color: var(--subtle); font-size: 14px; }
+    .field { display: grid; gap: 6px; margin-bottom: 12px; }
+    .field label { color: var(--subtle); font-size: 14px; }
+    .input, textarea { width: 100%; background: #0b1222; border: 1px solid #232a3a; color: var(--text); border-radius: 8px; padding: 8px 10px; outline: none; }
+    textarea { min-height: 120px; resize: vertical; }
+    .auth-box { display: grid; gap: 12px; }
+    .auth-toggle { display: flex; gap: 8px; }
+    .auth-toggle .btn { flex: 1; }
+    .error { color: var(--danger); font-size: 14px; min-height: 18px; }
+    .success { color: #10b981; font-size: 14px; min-height: 18px; }
+    .post-card { border: 1px solid #232a3a; border-radius: var(--radius); padding: 12px; display: grid; gap: 8px; }
+    .post-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .post-meta { color: var(--subtle); font-size: 13px; }
+    .post-actions { display: flex; gap: 8px; }
+    .comments { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #2b3346; }
+    .comment { padding: 10px; border: 1px solid #232a3a; border-radius: 8px; margin-bottom: 10px; background: #0c1426; }
+    .comment-meta { color: var(--subtle); font-size: 12px; display: flex; justify-content: space-between; }
+    .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .spacer { flex: 1; }
+    .chip { padding: 4px 8px; border-radius: 999px; background: #232a3a; color: #c7d2fe; font-size: 12px; }
+    .footer { color: var(--subtle); font-size: 13px; text-align: center; padding: 24px 0 40px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div class="title">Blogify</div>
+          <div class="muted" style="font-size:12px">Local demo: Auth • Posts • Comments</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <span id="currentUserChip" class="chip" style="display:none"></span>
+        <button id="btnSeed" class="btn ghost" title="Seed demo data">Seed</button>
+        <button id="btnReset" class="btn danger" title="Clear all data">Reset</button>
+        <button id="btnLogout" class="btn" style="display:none">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <section class="panel" id="authSection">
+        <h2>Account</h2>
+        <div class="auth-toggle">
+          <button class="btn primary" id="toggleLogin">Login</button>
+          <button class="btn" id="toggleSignup">Sign Up</button>
+        </div>
+        <div class="auth-box" id="loginBox">
+          <div class="field">
+            <label for="loginUsername">Username</label>
+            <input class="input" id="loginUsername" autocomplete="username" />
+          </div>
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <input class="input" id="loginPassword" type="password" autocomplete="current-password" />
+          </div>
+          <div class="error" id="loginError"></div>
+          <button class="btn primary" id="btnLogin">Login</button>
+        </div>
+        <div class="auth-box" id="signupBox" style="display:none">
+          <div class="field">
+            <label for="signupUsername">Username</label>
+            <input class="input" id="signupUsername" autocomplete="username" />
+          </div>
+          <div class="field">
+            <label for="signupPassword">Password</label>
+            <input class="input" id="signupPassword" type="password" autocomplete="new-password" />
+          </div>
+          <div class="field">
+            <label for="signupPassword2">Confirm Password</label>
+            <input class="input" id="signupPassword2" type="password" autocomplete="new-password" />
+          </div>
+          <div class="error" id="signupError"></div>
+          <div class="success" id="signupSuccess"></div>
+          <button class="btn primary" id="btnSignup">Create Account</button>
+        </div>
+      </section>
+
+      <section class="panel" id="composeSection" aria-live="polite">
+        <h2>Create a Post</h2>
+        <div class="muted" id="composeHint">Log in to write a post.</div>
+        <div id="composeForm" style="display:none">
+          <div class="field">
+            <label for="postTitle">Title</label>
+            <input class="input" id="postTitle" maxlength="120" />
+          </div>
+          <div class="field">
+            <label for="postContent">Content</label>
+            <textarea id="postContent" placeholder="Write your thoughts..."></textarea>
+          </div>
+          <div class="toolbar">
+            <div class="spacer"></div>
+            <button class="btn" id="btnClearComposer" title="Clear">Clear</button>
+            <button class="btn primary" id="btnPublish">Publish</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section style="margin-top:20px" class="panel">
+      <div class="post-header" style="margin-bottom:10px">
+        <h2 style="margin:0">Recent Posts</h2>
+        <div class="muted" id="postCount">0 posts</div>
+      </div>
+      <div id="postsList" style="display:grid; gap:16px"></div>
+    </section>
+
+    <div class="footer">Built for the Brain-Wave internship task. Data lives in your browser.</div>
+  </main>
+
+  <script>
+    // Storage helpers
+    const storage = {
+      read(key, fallback) {
+        try { const val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; }
+        catch { return fallback; }
+      },
+      write(key, value) { localStorage.setItem(key, JSON.stringify(value)); },
+      remove(key) { localStorage.removeItem(key); }
+    };
+
+    // Models
+    const KEYS = {
+      users: 'bw_users',
+      session: 'bw_session_user',
+      posts: 'bw_posts'
+    };
+
+    function nowIso() { return new Date().toISOString(); }
+    function uid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+    // State
+    let currentUser = storage.read(KEYS.session, null);
+
+    // Elements
+    const el = (id) => document.getElementById(id);
+    const loginBox = el('loginBox');
+    const signupBox = el('signupBox');
+    const toggleLogin = el('toggleLogin');
+    const toggleSignup = el('toggleSignup');
+    const loginError = el('loginError');
+    const signupError = el('signupError');
+    const signupSuccess = el('signupSuccess');
+    const btnLogin = el('btnLogin');
+    const btnSignup = el('btnSignup');
+    const btnLogout = el('btnLogout');
+    const currentUserChip = el('currentUserChip');
+    const composeHint = el('composeHint');
+    const composeForm = el('composeForm');
+    const btnPublish = el('btnPublish');
+    const btnClearComposer = el('btnClearComposer');
+    const postTitle = el('postTitle');
+    const postContent = el('postContent');
+    const postsList = el('postsList');
+    const postCount = el('postCount');
+    const btnReset = el('btnReset');
+    const btnSeed = el('btnSeed');
+
+    // Auth view toggles
+    function setAuthMode(mode) {
+      const isLogin = mode === 'login';
+      toggleLogin.classList.toggle('primary', isLogin);
+      toggleSignup.classList.toggle('primary', !isLogin);
+      loginBox.style.display = isLogin ? 'grid' : 'none';
+      signupBox.style.display = isLogin ? 'none' : 'grid';
+      loginError.textContent = '';
+      signupError.textContent = '';
+      signupSuccess.textContent = '';
+    }
+
+    toggleLogin.addEventListener('click', () => setAuthMode('login'));
+    toggleSignup.addEventListener('click', () => setAuthMode('signup'));
+
+    // Auth logic
+    function getUsers() { return storage.read(KEYS.users, []); }
+    function saveUsers(users) { storage.write(KEYS.users, users); }
+
+    function setSession(username) {
+      currentUser = username;
+      if (username) storage.write(KEYS.session, username); else storage.remove(KEYS.session);
+      refreshAuthUi();
+    }
+
+    function refreshAuthUi() {
+      const loggedIn = Boolean(currentUser);
+      el('authSection').querySelectorAll('input').forEach(i => i.disabled = loggedIn);
+      el('authSection').querySelectorAll('button').forEach(b => b.disabled = false);
+      btnLogout.style.display = loggedIn ? 'inline-block' : 'none';
+      currentUserChip.style.display = loggedIn ? 'inline-block' : 'none';
+      currentUserChip.textContent = loggedIn ? `@${currentUser}` : '';
+      composeHint.style.display = loggedIn ? 'none' : 'block';
+      composeForm.style.display = loggedIn ? 'block' : 'none';
+      renderPosts();
+    }
+
+    btnLogin.addEventListener('click', () => {
+      const username = el('loginUsername').value.trim();
+      const password = el('loginPassword').value;
+      loginError.textContent = '';
+      if (!username || !password) { loginError.textContent = 'Enter username and password.'; return; }
+      const users = getUsers();
+      const found = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+      if (!found || found.password !== password) { loginError.textContent = 'Invalid credentials.'; return; }
+      setSession(found.username);
+    });
+
+    btnSignup.addEventListener('click', () => {
+      const username = el('signupUsername').value.trim();
+      const password = el('signupPassword').value;
+      const password2 = el('signupPassword2').value;
+      signupError.textContent = '';
+      signupSuccess.textContent = '';
+      if (!username || !password || !password2) { signupError.textContent = 'All fields are required.'; return; }
+      if (password.length < 6) { signupError.textContent = 'Password must be at least 6 characters.'; return; }
+      if (password !== password2) { signupError.textContent = 'Passwords do not match.'; return; }
+      const users = getUsers();
+      if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) { signupError.textContent = 'Username already taken.'; return; }
+      users.push({ username, password, createdAt: nowIso() });
+      saveUsers(users);
+      signupSuccess.textContent = 'Account created. You can now log in.';
+      setAuthMode('login');
+      el('loginUsername').value = username;
+      el('loginPassword').value = '';
+    });
+
+    btnLogout.addEventListener('click', () => { setSession(null); });
+
+    // Posts
+    function getPosts() { return storage.read(KEYS.posts, []); }
+    function savePosts(posts) { storage.write(KEYS.posts, posts); }
+
+    function publishPost() {
+      const title = postTitle.value.trim();
+      const content = postContent.value.trim();
+      if (!title || !content) return alert('Title and content are required.');
+      const posts = getPosts();
+      posts.unshift({
+        id: uid(),
+        author: currentUser,
+        title, content,
+        createdAt: nowIso(), updatedAt: nowIso(),
+        comments: []
+      });
+      savePosts(posts);
+      postTitle.value = '';
+      postContent.value = '';
+      renderPosts();
+    }
+
+    btnPublish.addEventListener('click', publishPost);
+    btnClearComposer.addEventListener('click', () => { postTitle.value = ''; postContent.value = ''; });
+
+    function canEdit(post) { return currentUser && post.author === currentUser; }
+    function formatDate(iso) { const d = new Date(iso); return d.toLocaleString(); }
+
+    function renderPosts() {
+      const posts = getPosts();
+      postCount.textContent = posts.length === 1 ? '1 post' : `${posts.length} posts`;
+      postsList.innerHTML = '';
+      if (!posts.length) {
+        const empty = document.createElement('div');
+        empty.className = 'muted';
+        empty.textContent = 'No posts yet.';
+        postsList.appendChild(empty);
+        return;
+      }
+      for (const post of posts) {
+        postsList.appendChild(renderPostCard(post));
+      }
+    }
+
+    function renderPostCard(post) {
+      const card = document.createElement('article');
+      card.className = 'post-card';
+      const header = document.createElement('div');
+      header.className = 'post-header';
+      header.innerHTML = `<div>
+          <div style="font-weight:700; font-size:18px">${escapeHtml(post.title)}</div>
+          <div class="post-meta">By @${escapeHtml(post.author)} · ${formatDate(post.createdAt)}${post.updatedAt && post.updatedAt !== post.createdAt ? ' · edited' : ''}</div>
+        </div>`;
+
+      const actions = document.createElement('div');
+      actions.className = 'post-actions';
+      if (canEdit(post)) {
+        const editBtn = button('Edit');
+        editBtn.addEventListener('click', () => editPostInline(card, post));
+        const delBtn = button('Delete');
+        delBtn.classList.add('danger');
+        delBtn.addEventListener('click', () => deletePost(post.id));
+        actions.append(editBtn, delBtn);
+      }
+      header.appendChild(actions);
+      card.appendChild(header);
+
+      const content = document.createElement('div');
+      content.innerHTML = `<div style="white-space:pre-wrap">${escapeHtml(post.content)}</div>`;
+      card.appendChild(content);
+
+      card.appendChild(renderComments(post));
+      return card;
+    }
+
+    function button(text) { const b = document.createElement('button'); b.className='btn'; b.textContent = text; return b; }
+
+    function editPostInline(card, post) {
+      const editor = document.createElement('div');
+      editor.className = 'panel';
+      editor.style.padding = '12px';
+      editor.innerHTML = `
+        <div class="field"><label>Title</label><input class="input" id="e_title" value="${escapeAttribute(post.title)}" /></div>
+        <div class="field"><label>Content</label><textarea id="e_content">${escapeHtml(post.content)}</textarea></div>
+        <div class="toolbar"><div class="spacer"></div>
+          <button class="btn" id="e_cancel">Cancel</button>
+          <button class="btn primary" id="e_save">Save</button>
+        </div>`;
+      card.appendChild(editor);
+      editor.querySelector('#e_cancel').addEventListener('click', () => editor.remove());
+      editor.querySelector('#e_save').addEventListener('click', () => {
+        const title = editor.querySelector('#e_title').value.trim();
+        const content = editor.querySelector('#e_content').value.trim();
+        if (!title || !content) return alert('Both fields are required.');
+        const posts = getPosts();
+        const idx = posts.findIndex(p => p.id === post.id);
+        if (idx !== -1) {
+          posts[idx].title = title;
+          posts[idx].content = content;
+          posts[idx].updatedAt = nowIso();
+          savePosts(posts);
+          renderPosts();
+        }
+      });
+    }
+
+    function deletePost(id) {
+      if (!confirm('Delete this post?')) return;
+      const posts = getPosts().filter(p => p.id !== id);
+      savePosts(posts);
+      renderPosts();
+    }
+
+    // Comments
+    function renderComments(post) {
+      const wrap = document.createElement('div');
+      wrap.className = 'comments';
+      const title = document.createElement('div');
+      title.className = 'post-meta';
+      title.textContent = `${post.comments.length} comment${post.comments.length === 1 ? '' : 's'}`;
+      wrap.appendChild(title);
+
+      // list
+      for (const c of post.comments) {
+        wrap.appendChild(renderComment(post, c));
+      }
+
+      // composer
+      const composer = document.createElement('div');
+      if (currentUser) {
+        composer.innerHTML = `
+          <div class="field"><label for="c_${post.id}">Add a comment</label>
+            <input class="input" id="c_${post.id}" placeholder="Write a comment..." />
+          </div>
+          <div class="toolbar"><div class="spacer"></div>
+            <button class="btn primary">Comment</button>
+          </div>`;
+        composer.querySelector('button').addEventListener('click', () => {
+          const input = composer.querySelector('input');
+          const text = input.value.trim();
+          if (!text) return;
+          const posts = getPosts();
+          const idx = posts.findIndex(p => p.id === post.id);
+          if (idx !== -1) {
+            posts[idx].comments.push({ id: uid(), author: currentUser, text, createdAt: nowIso() });
+            savePosts(posts);
+            renderPosts();
+          }
+        });
+      } else {
+        composer.innerHTML = `<div class="muted">Log in to comment.</div>`;
+      }
+      wrap.appendChild(composer);
+      return wrap;
+    }
+
+    function renderComment(post, c) {
+      const row = document.createElement('div');
+      row.className = 'comment';
+      const meta = document.createElement('div');
+      meta.className = 'comment-meta';
+      const left = document.createElement('div');
+      left.textContent = `@${c.author} • ${formatDate(c.createdAt)}`;
+      const right = document.createElement('div');
+      if (currentUser && (c.author === currentUser || post.author === currentUser)) {
+        const del = document.createElement('button');
+        del.className = 'btn danger';
+        del.textContent = 'Delete';
+        del.addEventListener('click', () => deleteComment(post.id, c.id));
+        right.appendChild(del);
+      }
+      meta.append(left, right);
+      const body = document.createElement('div');
+      body.style.whiteSpace = 'pre-wrap';
+      body.textContent = c.text;
+      row.append(meta, body);
+      return row;
+    }
+
+    function deleteComment(postId, commentId) {
+      const posts = getPosts();
+      const idx = posts.findIndex(p => p.id === postId);
+      if (idx !== -1) {
+        posts[idx].comments = posts[idx].comments.filter(c => c.id !== commentId);
+        savePosts(posts);
+        renderPosts();
+      }
+    }
+
+    // Utilities
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+    function escapeAttribute(str) {
+      return escapeHtml(str).replaceAll('"', '&quot;');
+    }
+
+    // Seed & Reset
+    btnReset.addEventListener('click', () => {
+      if (!confirm('Clear all demo data?')) return;
+      storage.remove(KEYS.users);
+      storage.remove(KEYS.posts);
+      storage.remove(KEYS.session);
+      currentUser = null;
+      refreshAuthUi();
+    });
+
+    btnSeed.addEventListener('click', () => {
+      const users = [
+        { username: 'alice', password: 'password', createdAt: nowIso() },
+        { username: 'bob', password: 'password', createdAt: nowIso() },
+      ];
+      const posts = [
+        { id: uid(), author: 'alice', title: 'Welcome to Blogify', content: 'This is a simple local demo app with posts and comments.', createdAt: nowIso(), updatedAt: nowIso(), comments: [
+          { id: uid(), author: 'bob', text: 'Nice work!', createdAt: nowIso() }
+        ]},
+        { id: uid(), author: 'bob', title: 'Dark UI', content: 'Loving this dark theme and the minimal UI.', createdAt: nowIso(), updatedAt: nowIso(), comments: [] },
+      ];
+      saveUsers(users);
+      savePosts(posts);
+      if (!currentUser) setSession('alice');
+      renderPosts();
+      alert('Seeded demo users (alice/bob, password: password) and posts.');
+    });
+
+    // Init
+    setAuthMode('login');
+    refreshAuthUi();
+  </script>
+</body>
+</html> 
+
+ 
